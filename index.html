@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEMPES - Keripik Tempe Premium & Interaktif</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Matter.js untuk Game Fisika -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fffbeb; /* Warna krem hangat super lembut */
+        }
+        .brand-font {
+            font-family: 'Fredoka', cursive;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #fef3c7;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+        /* Animasi Mengambang Kroco & Produk */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .float-animation {
+            animation: float 4s ease-in-out infinite;
+        }
+        .lokasi-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.lokasi-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.lokasi-header h2 {
+    color: #e67e22; /* Warna khas snack/tempe goreng yang hangat */
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+
+.lokasi-header p {
+    color: #666;
+    font-size: 1rem;
+}
+
+.lokasi-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+/* Kartu Informasi */
+.info-toko-card {
+    flex: 1;
+    min-width: 300px;
+    background: #fdfbf7;
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 5px solid #d35400;
+}
+
+.info-toko-card h3 {
+    margin-top: 0;
+    color: #d35400;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.info-item .icon {
+    font-size: 1.2rem;
+    margin-right: 12px;
+    margin-top: 2px;
+}
+
+.info-badges {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    background: #ffeaa7;
+    color: #d35400;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.btn-rute {
+    width: 100%;
+    background: #e67e22;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-rute:hover {
+    background: #d35400;
+}
+
+/* Komponen Peta Palsu/Simulasi */
+.map-placeholder {
+    flex: 1;
+    min-width: 300px;
+    height: 320px;
+    background: #e5e9f0; /* Warna dasar peta */
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #bdc3c7;
+}
+
+/* Efek visual menyerupai denah jalan fiktif */
+.map-graphic {
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(90deg, rgba(255,255,255,0.7) 10px, transparent 10px),
+        linear-gradient(rgba(255,255,255,0.7) 10px, transparent 10px);
+    background-size: 60px 60px;
+    background-color: #f1f2f6;
+    position: relative;
+}
+
+.pin-toko {
+    font-size: 2.5rem;
+    position: absolute;
+    top: 40%;
+    left: 45%;
+    animation: bounce 2s infinite;
+}
+
+.label-peta {
+    position: absolute;
+    top: 58%;
+    left: 20%;
+    right: 20%;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.map-overlay-text {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.9);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #7f8c8d;
+}
+
+/* Animasi Pin Bergerak */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Responsif untuk Handphone */
+@media (max-width: 768px) {
+    .lokasi-content {
+        flex-direction: column;
+    }
+    .map-placeholder {
+        height: 220px;
+    }
+}
+
+    </style>
+</head>
+<body class="overflow-x-hidden text-amber-950 custom-scrollbar">
+
+    <!-- Header / Navigation -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-amber-100 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="#beranda" class="flex items-center gap-2">
+                <span class="text-2xl brand-font font-bold text-amber-600 tracking-wider">TEMPES</span>
+                <span class="bg-amber-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">UMKM</span>
+            </a>
+            <nav class="hidden md:flex items-center gap-8 font-semibold text-sm">
+                <a href="#beranda" class="hover:text-amber-600 transition-colors">Beranda</a>
+                <a href="#produk" class="hover:text-amber-600 transition-colors">Produk Kami</a>
+                <a href="#kroco" class="hover:text-amber-600 transition-colors">The Tempes</a>
+                <a href="#game" class="hover:text-amber-600 transition-colors flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1 rounded-full">Game Seru</a>
+            </nav>
+            <a href="#game" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-xs shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5">
+                Main & Klaim Diskon
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="beranda" class="relative overflow-hidden pt-12 pb-20 px-4 max-w-6xl mx-auto grid md:grid-cols-12 gap-8 items-center">
+        <!-- Background Dekoration -->
+        <div class="absolute -top-10 -left-10 w-40 h-40 bg-amber-200/40 rounded-full blur-3xl -z-10"></div>
+        <div class="absolute bottom-10 right-10 w-60 h-60 bg-orange-200/30 rounded-full blur-3xl -z-10"></div>
+
+        <div class="md:col-span-7 space-y-6 text-center md:text-left">
+            <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full inline-block uppercase tracking-wider">⚡ Snack Lokal Paling Kriuk & Kekinian</span>
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+                Keripik Tempe Premium <br>
+                <span class="text-amber-600 brand-font">TEMPES</span> Bikin Nagih!
+            </h1>
+            <p class="text-base text-amber-900/80 max-w-lg leading-relaxed mx-auto md:mx-0">
+                Inovasi snack sehat dari tempe pilihan. Diiris tipis, digoreng renyah, dan dibumbui dengan rempah alami! Tanpa MSG berlebih, aman dikonsumsi kapan saja.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+                <a href="#game" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-4 rounded-2xl shadow-lg shadow-amber-500/25 transition-all text-center flex items-center justify-center gap-2 hover:-translate-y-1">
+                    <i data-lucide="play" class="fill-current w-5 h-5"></i>
+                    Main Game, Dapat Diskon!
+                </a>
+                <a href="#produk" class="w-full sm:w-auto bg-white hover:bg-amber-50 text-amber-950 border border-amber-200 font-bold px-8 py-4 rounded-2xl transition-all text-center">
+                    Lihat Varian Rasa
+                </a>
+            </div>
+            
+            <!-- Keunggulan Singkat -->
+            <div class="grid grid-cols-3 gap-2 pt-4 border-t border-amber-100 max-w-md mx-auto md:mx-0">
+                <div class="text-center md:text-left">
+                    <div class="font-extrabold text-lg text-amber-600">100%</div>
+                    <div class="text-xs text-amber-900/70 font-semibold">Bahan Alami</div>
+                </div>
+                <div class="text-center md:text-left">
+                    <div class="font-extrabold text-lg text-amber-600">No MSG</div>
+                    <div class="text-xs text-amber-900/70 font-semibold">Lebih Sehat</div>
+                </div>
+                <div class="text-center md:text-left">
+                    <div class="font-extrabold text-lg text-amber-600">Lokal</div>
+                    <div class="text-xs text-amber-900/70 font-semibold">Dukung UMKM</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Image (Bungkusan TEMPES Premium Melayang Bebas) -->
+        <div class="md:col-span-5 flex justify-center relative">
+            <div class="w-72 h-72 md:w-96 md:h-96 bg-amber-300 rounded-[4rem] absolute rotate-6 -z-10 shadow-inner"></div>
+            <!-- Container Gambar Utama dengan Efek Floating Tanpa Background Putih -->
+            <div class="float-animation flex flex-col items-center">
+                <div class="relative w-72 h-96 flex flex-col items-center justify-center p-4 overflow-visible">
+                    <img id="hero-product-img" src="assets/Produk TEMPES.png" alt="Produk TEMPES" class="w-full h-full object-contain hidden drop-shadow-[0_20px_35px_rgba(168,85,247,0.4)]" onload="this.classList.remove('hidden'); document.getElementById('hero-fallback-kroco').classList.add('hidden');" onerror="this.src='assets/Objek6.jpg'; this.onerror=function(){ this.style.display='none'; };">
+                    
+                    <!-- Fallback Gambar Maskot Kroco jika gambar lokal belum termuat (menggunakan glassmorphism lembut) -->
+                    <div id="hero-fallback-kroco" class="flex flex-col items-center justify-center h-full w-full p-4 bg-white/30 backdrop-blur-md rounded-3xl border-2 border-amber-900/10 shadow-lg">
+                        <div class="relative w-40 h-40 bg-[#dfc093] rounded-3xl border-4 border-amber-950 shadow-md flex flex-col items-center justify-center p-3">
+                            <div class="absolute inset-1.5 border-2 border-dashed border-amber-800/20 rounded-xl pointer-events-none"></div>
+                            <div class="flex gap-6 z-10">
+                                <div class="w-8 h-8 bg-white rounded-full border-4 border-amber-950 flex items-center justify-center">
+                                    <div class="w-3.5 h-3.5 bg-amber-950 rounded-full"></div>
+                                </div>
+                                <div class="w-8 h-8 bg-white rounded-full border-4 border-amber-950 flex items-center justify-center">
+                                    <div class="w-3.5 h-3.5 bg-amber-950 rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="w-12 h-1 bg-amber-950 rounded-full mt-2.5 z-10"></div>
+                            <div class="mt-4 bg-amber-100 border-2 border-amber-950 px-2 py-0.5 font-bold text-[9px] rounded shadow-md z-10 tracking-widest uppercase">KROCO</div>
+                            <div class="absolute bottom-4 -left-6 w-14 h-4 bg-amber-800 border-2 border-amber-950 rounded-full rotate-[15deg]"></div>
+                        </div>
+                        <p class="text-[10px] text-amber-900/70 mt-4 text-center font-bold leading-relaxed px-2">
+                            💡 Jalankan di VS Code lewat "Go Live" agar objek kemasan asli <strong class="text-amber-800">"Objek1.png"</strong> Anda tampil melayang di sini!
+                        </p>
+                    </div>
+                </div>
+                <span class="mt-6 bg-amber-950 text-amber-100 text-xs px-4 py-1.5 rounded-full font-bold shadow-md">Kemasan Premium TEMPES Original</span>
+            </div>
+        </div>
+    </section>
+
+        <section id="produk" class="bg-amber-100/50 py-16 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center max-w-lg mx-auto mb-12">
+                <span class="text-amber-600 font-extrabold text-xs uppercase tracking-wider">Kelezatan Pilihan</span>
+                <h2 class="text-3xl font-extrabold mt-1">3 Varian Rasa Favorit Milenial</h2>
+                <p class="text-amber-900/70 text-sm mt-2">Dibuat menggunakan rempah-rempah pilihan terbaik, melahirkan rasa gurih renyah alami di setiap gigitan.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Varian 1: TEMPES Original -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-amber-100 hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                        <!-- Container Gambar Produk TEMPES Original -->
+                        <div class="relative w-full h-48 bg-amber-50/50 rounded-2xl flex items-center justify-center mb-4 overflow-hidden border border-amber-100/50">
+                            <!-- Mencoba memuat file lokal assets/Produk TEMPES.png -->
+                            <img src="assets/Produk TEMPES.png" alt="TEMPES Original" class="h-64 object-contain drop-shadow-[0_12px_20px_rgba(120,53,15,0.25)] hover:scale-200 transition-transform duration-300" onerror="this.style.display='none'; document.getElementById('fallback-prod-1').classList.remove('hidden');">
+                            <!-- Fallback jika gambar lokal belum ter-load -->
+                            <div id="fallback-prod-1" class="hidden text-center p-4">
+                                <span class="text-4xl block mb-1">🧂</span>
+                                <span class="text-[10px] text-amber-800/60 font-bold block">assets/Produk TEMPES.png belum termuat</span>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold mb-1">TEMPES Original</h3>
+                        <p class="text-xs text-amber-900/60 font-semibold mb-3">Rasa Klasik Gurih Ketumbar Alami</p>
+                        <p class="text-sm text-amber-900/80 leading-relaxed">
+                            Cita rasa otentik bumbu warisan nusantara. Sangat terasa gurih ketumbar dan bawang putih aslinya. Cocok untuk menemani nasi hangat!
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-amber-50 flex items-center justify-between">
+                        <span class="text-lg font-extrabold text-amber-600">Rp 14.000 <span class="text-xs text-gray-400 font-normal">/ 100g</span></span>
+                        <a href="#game" class="bg-amber-100 text-amber-800 hover:bg-amber-200 px-4 py-2 rounded-xl text-xs font-bold transition-all">Beli Sekarang</a>
+                    </div>
+                </div>
+
+                <!-- Varian 2: TEMPES Sweet Corn -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-amber-100 hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                        <!-- Container Gambar Produk TEMPES Sweet Corn -->
+                        <div class="relative w-full h-48 bg-yellow-50/50 rounded-2xl flex items-center justify-center mb-4 overflow-hidden border border-yellow-100/50">
+                            <!-- Mencoba memuat file lokal assets/Produk TEMPES 2.png -->
+                            <img src="assets/Produk TEMPES 2.png" alt="TEMPES Sweet Corn" class="h-64 object-contain drop-shadow-[0_12px_20px_rgba(202,138,4,0.25)] hover:scale-200 transition-transform duration-300" onerror="this.style.display='none'; document.getElementById('fallback-prod-2').classList.remove('hidden');">
+                            <!-- Fallback jika gambar lokal belum ter-load -->
+                            <div id="fallback-prod-2" class="hidden text-center p-4">
+                                <span class="text-4xl block mb-1">🌽</span>
+                                <span class="text-[10px] text-yellow-800/60 font-bold block">assets/Produk TEMPES 2.png belum termuat</span>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold mb-1">TEMPES Sweet Corn</h3>
+                        <p class="text-xs text-yellow-800/80 font-semibold mb-3">Sensasi Manis Gurih Jagung Bakar</p>
+                        <p class="text-sm text-amber-900/80 leading-relaxed">
+                            Kelezatan jagung manis bakar pilihan dengan aroma mentega yang menggoda. Perpaduan rasa manis dan gurihnya sangat pas dan bikin santai makin seru!
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-amber-50 flex items-center justify-between">
+                        <span class="text-lg font-extrabold text-amber-600">Rp 15.000 <span class="text-xs text-gray-400 font-normal">/ 100g</span></span>
+                        <a href="#game" class="bg-amber-100 text-amber-800 hover:bg-amber-200 px-4 py-2 rounded-xl text-xs font-bold transition-all">Beli Sekarang</a>
+                    </div>
+                </div>
+
+                <!-- Varian 3: TEMPES Seaweed -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border border-amber-100 hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                        <!-- Container Gambar Produk TEMPES Seaweed -->
+                        <div class="relative w-full h-48 bg-green-50/50 rounded-2xl flex items-center justify-center mb-4 overflow-hidden border border-green-100/50">
+                            <!-- Mencoba memuat file lokal assets/Produk TEMPES 3.png -->
+                            <img src="assets/Produk TEMPES 3.png" alt="TEMPES Seaweed" class="h-64 object-contain drop-shadow-[0_12px_20px_rgba(21,128,61,0.25)] hover:scale-110 transition-transform duration-300" onerror="this.style.display='none'; document.getElementById('fallback-prod-3').classList.remove('hidden');">
+                            <!-- Fallback jika gambar lokal belum ter-load -->
+                            <div id="fallback-prod-3" class="hidden text-center p-4">
+                                <span class="text-4xl block mb-1">🌿</span>
+                                <span class="text-[10px] text-green-800/60 font-bold block">assets/Produk TEMPES 3.png belum termuat</span>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold mb-1">TEMPES Seaweed</h3>
+                        <p class="text-xs text-green-700 font-semibold mb-3">Taburan Rumput Laut Gurih Khas Jepang</p>
+                        <p class="text-sm text-amber-900/80 leading-relaxed">
+                            Keripik tempe tipis yang berpadu dengan gurihnya rumput laut alami pilihan. Memberikan sensasi gurih umami laut khas Jepang di setiap gigitan renyahnya!
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-amber-50 flex items-center justify-between">
+                        <span class="text-lg font-extrabold text-amber-600">Rp 15.000 <span class="text-xs text-gray-400 font-normal">/ 100g</span></span>
+                        <a href="#game" class="bg-amber-100 text-amber-800 hover:bg-amber-200 px-4 py-2 rounded-xl text-xs font-bold transition-all">Beli Sekarang</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<section id="kroco" class="py-16 px-4 bg-amber-50/50">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center max-w-lg mx-auto mb-12">
+                <span class="text-amber-600 font-extrabold text-xs uppercase tracking-wider">Kisah Karakter</span>
+                <h2 class="text-3xl font-extrabold mt-1 brand-font">Dunia Tempes: Legenda & Pejuang</h2>
+                <p class="text-amber-900/70 text-sm mt-2">Inilah kisah Bangsa Tempes yang menuntun evolusi kelezatan renyah premium TEMPES!</p>
+            </div>
+
+            <!-- Grid Kartu Cerita 6 Karakter Pejuang Tempe -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Objek 1: Si Kroco -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-red-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                    <div class="relative w-28 h-28 flex items-center justify-center mb-4 overflow-visible">
+                        <img src="assets/Objek1.png" alt="Si Kroco" class="h-24 object-contain drop-shadow-[0_8px_16px_rgba(120,53,15,0.2)]" onerror="this.style.display='none'; document.getElementById('story-fallback-1').classList.remove('hidden');">
+                        <div id="story-fallback-1" class="hidden text-5xl">🫘</div>
+                    </div>
+                    <span class="bg-red-100 text-amber-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">Level 1 - Prajurit</span>
+                    <h3 class="text-lg font-bold text-amber-950 mb-2">Si Kroco</h3>
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Prajurit Tempe biasa yang memiliki mimpi setinggi langit. Di tengah keterbatasannya, ia gigih berjuang dan bercita-cita menjadi Prajurit Tempe terkuat di seluruh jagat raya!
+                    </p>
+                </div>
+
+                <!-- Objek 2: Si Boss -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-orange-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                    <div class="relative w-28 h-28 flex items-center justify-center mb-4 overflow-visible">
+                        <img src="assets/Objek2.png" alt="Si Boss" class="h-24 object-contain drop-shadow-[0_8px_16px_rgba(202,138,4,0.2)]" onerror="this.style.display='none'; document.getElementById('story-fallback-2').classList.remove('hidden');">
+                        <div id="story-fallback-2" class="hidden text-5xl">🔬</div>
+                    </div>
+                    <span class="bg-orange-100 text-orange-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">Level 2 - Mentor</span>
+                    <h3 class="text-lg font-bold text-amber-950 mb-2">Si Boss</h3>
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Bos bijaksana yang menjadi mentor andalan para Kroco. Setiap hari, ia melatih Si Kroco dengan disiplin tinggi agar kelak ia mampu menembus batas dan menjadi pejuang tangguh.
+                    </p>
+                </div>
+
+                <!-- Objek 3: Healer -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-yellow-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                    <div class="relative w-28 h-28 flex items-center justify-center mb-4 overflow-visible">
+                        <img src="assets/Objek3.png" alt="Healer" class="h-24 object-contain drop-shadow-[0_8px_16px_rgba(16,185,129,0.2)]" onerror="this.style.display='none'; document.getElementById('story-fallback-3').classList.remove('hidden');">
+                        <div id="story-fallback-3" class="hidden text-5xl">🧱</div>
+                    </div>
+                    <span class="bg-yellow-100 text-yellow-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">Level 3 - Penyembuh</span>
+                    <h3 class="text-lg font-bold text-amber-950 mb-2">Tempes Healer</h3>
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Tempe murni berhati mulia yang dikaruniai kekuatan penyembuh ajaib oleh Dewa Tempe. Tujuan hidupnya yang mulia kini adalah mengobati seluruh penyakit yang melanda Dunia Tempes.
+                    </p>
+                </div>
+
+                <!-- Objek 4: Wibu -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-emerald-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                    <div class="relative w-28 h-28 flex items-center justify-center mb-4 overflow-visible">
+                        <img src="assets/Objek4.png" alt="Wibu" class="h-24 object-contain drop-shadow-[0_8px_16px_rgba(239,68,68,0.2)]" onerror="this.style.display='none'; document.getElementById('story-fallback-4').classList.remove('hidden');">
+                        <div id="story-fallback-4" class="hidden text-5xl">🧆</div>
+                    </div>
+                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">Level 4 - Wibu</span>
+                    <h3 class="text-lg font-bold text-amber-950 mb-2">Tempes Anime</h3>
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Pejuang Tempes eksentrik penggila anime yang dianugerahi kekuatan "One For All" dari Toshinori Yagi. Tekadnya membara untuk menjadi pahlawan terbaik sepanjang sejarah!
+                    </p>
+                </div>
+
+                <!-- Objek 5: Tempe S Kenn -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                    <div class="relative w-28 h-28 flex items-center justify-center mb-4 overflow-visible">
+                        <img src="assets/Objek5.png" alt="Tempe S Kenn" class="h-24 object-contain drop-shadow-[0_8px_16px_rgba(71,85,105,0.25)]" onerror="this.style.display='none'; document.getElementById('story-fallback-5').classList.remove('hidden');">
+                        <div id="story-fallback-5" class="hidden text-5xl">🟡</div>
+                    </div>
+                    <span class="bg-slate-100 text-slate-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">Level 5 - Veteran</span>
+                    <h3 class="text-lg font-bold text-amber-950 mb-2">Tempe S Kenn</h3>
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Veteran perang terbaik dengan taktik tempur tanpa tanding. Memiliki segudang pengalaman dan dikenal luas sebagai pejuang terhebat di sepanjang masa.
+                    </p>
+                </div>
+
+                <!-- Objek 6: Dewa Tempe -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-purple-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                    <div class="relative w-28 h-28 flex items-center justify-center mb-4 overflow-visible">
+                        <!-- Mencoba memuat file format PNG atau JPG untuk Dewa Tempe -->
+                        <img src="assets/Objek6.png" alt="Dewa Tempe" class="h-24 object-contain drop-shadow-[0_8px_16px_rgba(168,85,247,0.3)] animate-pulse" onerror="this.src='assets/Objek6.jpg'; this.onerror=function(){ this.style.display='none'; document.getElementById('story-fallback-6').classList.remove('hidden'); };">
+                        <div id="story-fallback-6" class="hidden text-5xl">👾</div>
+                    </div>
+                    <span class="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">Level 6 - GOD</span>
+                    <h3 class="text-lg font-bold text-purple-950 mb-2">Dewa Tempe</h3>
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Entitas pencipta kehidupan di Dunia Tempes. Sangat sedikit yang diketahui tentangnya, namun tak satu pun makhluk di semesta ini mampu mengimbangi kekuatannya!
+                    </p>
+                </div>
+
+                                <!-- Objek 7: Alien Tempe -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-purple-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                    <div class="relative w-28 h-28 flex items-center justify-center mb-4 overflow-visible">
+                        <!-- Mencoba memuat file format PNG atau JPG untuk Dewa Tempe -->
+                        <img src="assets/Objek7.png" alt="Dewa Tempe" class="h-24 object-contain drop-shadow-[0_8px_16px_rgba(168,85,247,0.3)] animate-pulse" onerror="this.src='assets/Objek7.jpg'; this.onerror=function(){ this.style.display='none'; document.getElementById('story-fallback-6').classList.remove('hidden'); };">
+                        <div id="story-fallback-6" class="hidden text-5xl">👾</div>
+                    </div>
+                    <span class="bg-violet-100 text-violet-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">Level 7 - Alien</span>
+                    <h3 class="text-lg font-bold text-violet-950 mb-2">Super Ho</h3>
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Entitas kuat yang menjadi rival Dewa Tempe. Kehadirannya di Dunia Tempe hanya ingin menhancurkan apa yang sudah dicipta oleh Sang Dewa!
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Marketing Game Section -->
+    <section id="game" class="bg-gradient-to-b from-amber-50 to-orange-100 py-16 px-4 border-t-2 border-amber-200">
+        <div class="max-w-6xl mx-auto text-center mb-10">
+            <span class="bg-amber-500 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-widest inline-block mb-3 animate-pulse">🎯 Game Tempes Spesial</span>
+            <h2 class="text-3xl font-extrabold brand-font text-amber-950">TEMPES GAME: BANTU KROCO!</h2>
+            <p class="text-sm text-amber-900/80 max-w-lg mx-auto mt-2">
+                Evolusikan Si Kroco hingga menjadi Entitas Tempes Terkuat (Dewa TEMPES). **Capai skor 100 poin** untuk membuka voucher diskon spesial 15% dari Dewa TEMPES!
+            </p>
+        </div>
+
+        <!-- Wadah Game Center Grid -->
+        <div class="max-w-4xl mx-auto grid md:grid-cols-12 gap-8 items-center">
+            
+            <!-- Panduan Rantai Evolusi (Kiri) -->
+            <div class="md:col-span-4 bg-white rounded-3xl p-5 shadow-lg border-2 border-amber-200 space-y-4">
+                <h3 class="font-bold text-sm text-center border-b pb-2 border-amber-100 uppercase tracking-wider text-amber-800 flex items-center justify-center gap-1">
+                    <i data-lucide="git-merge" class="w-4 h-4"></i> Rantai Evolusi TEMPES
+                </h3>
+                
+                <div class="space-y-2.5 max-h-[310px] overflow-y-auto pr-1">
+                    <div class="flex items-center gap-3 bg-amber-50/50 p-2 rounded-xl text-xs border border-red-500">
+                        <div>
+                            <div class="font-bold text-red-500">1. Si Kroco</div>
+                            <div class="text-gray-500 font-medium">Awali semua Pasukan dengan Kroco (+1 Poin)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-amber-50/50 p-2 rounded-xl text-xs border border-orange-500">
+                        <div>
+                            <div class="font-bold text-orange-500">2. Si Boss</div>
+                            <div class="text-gray-500 font-medium">Bukan sembarang Boss Para Kroco (+2 Poin)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-amber-50/50 p-2 rounded-xl text-xs border border-yellow-500">
+                        <div>
+                            <div class="font-bold text-yellow-500">3. Tempes Healer</div>
+                            <div class="text-gray-500 font-medium">Tempes dengan skill penyembuh (+4 Poin)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-amber-50/50 p-2 rounded-xl text-xs border border-green-500">
+                        <div>
+                            <div class="font-bold text-green-500">4. Tempes Anime</div>
+                            <div class="text-gray-500 font-medium">Tempes yang karuniahi PLUS ULTRA (+8 Poin)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-amber-50/50 p-2 rounded-xl text-xs border border-blue-500">
+                    
+                        <div>
+                            <div class="font-bold text-blue-500">5. Tempe S Kenn</div>
+                            <div class="text-gray-500 font-medium">Veteran Perang terhebat (+16 Poin)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-amber-50/50 p-2 rounded-xl text-xs border border-purple-400">
+
+                        <div>
+                            <div class="font-bold text-purple-700">6. GOD Tempes</div>
+                            <div class="text-gray-500 font-medium">Entitas Tempes terkuat (+32 Poin)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-amber-50/50 p-2 rounded-xl text-xs border border-violet-400">
+
+                        <div>
+                            <div class="font-bold text-violet-400">7. Super Ho</div>
+                            <div class="text-gray-500 font-medium">Alien Penjajah dunia Tempes (+64 Poin)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Area Interaktif Game (Kanan) -->
+            <div class="md:col-span-8 flex justify-center">
+                <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500">
+                    
+                    <!-- Top Game Info -->
+                    <div class="bg-amber-500 p-3 text-center text-white flex justify-between items-center px-4">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-extrabold text-sm brand-font tracking-wide">TEMPES GAME</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-xs font-bold">
+                            <div>Skor: <span id="game-score" class="text-amber-100 text-sm">0</span></div>
+                            <div>Target: <span class="text-green-300 text-sm">100</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Area Fisika Game (Container Canvas) -->
+                    <div class="relative bg-amber-50/80 flex justify-center items-center overflow-hidden" id="game-container" style="height: 400px;">
+                        
+                        <!-- Danger Limit Line -->
+                        <div id="game-danger-line" class="absolute left-0 right-0 h-0.5 bg-red-500 opacity-40 border-dashed border-t-2 border-red-600 pointer-events-none" style="top: 70px;"></div>
+                        
+                        <!-- Drop Guide -->
+                        <div id="game-drop-guide" class="absolute w-0.5 bg-amber-300 opacity-50 pointer-events-none" style="top: 0; bottom: 0; left: 50%; transform: translateX(-50%); display: none;"></div>
+
+                        <!-- Canvas -->
+                        <canvas id="game-canvas" class="block w-full h-full bg-gradient-to-b from-amber-50/50 to-amber-100/50"></canvas>
+
+                        <!-- Start/GameOver Overlay -->
+                        <div id="game-overlay" class="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 transition-all duration-300 z-10">
+                            <div class="text-center">
+                                <h3 id="game-overlay-title" class="text-2xl font-bold brand-font text-amber-400 mb-1">KUMPULKAN KEKUATAN!</h3>
+                                <p id="game-overlay-desc" class="text-xs mb-6 max-w-xs text-amber-100/90 leading-relaxed">
+                                    Gabungkan Pasukan Tempe yang sama agar berkembang menjadi entitas Tempes yang Absolute!
+                                </p>
+                                <button id="btn-game-start" class="bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold px-6 py-2.5 rounded-full text-sm shadow-md transition-all flex items-center gap-1.5 mx-auto">
+                                    <i data-lucide="play" class="w-4 h-4 fill-current"></i> Mulai Game
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Success Voucher Unlocked Pop-Up -->
+                        <div id="voucher-popup" class="absolute inset-0 bg-amber-950/90 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 transition-all duration-300 z-20 hidden">
+                            <div class="text-center space-y-4 max-w-xs">
+                                <span class="text-4xl">🎉🥳</span>
+                                <h4 class="text-xl font-bold text-amber-400 brand-font">TARGET DICAPAI!</h4>
+                                <p class="text-xs text-amber-100">Kroco sangat berterima kasih atas bantuanmu! Ini kode promo diskon 15% untuk pemesanan pertamamu:</p>
+                                
+                                <div class="bg-amber-900 border-2 border-amber-400/50 p-3 rounded-xl flex items-center justify-between gap-2">
+                                    <span id="promo-code" class="font-extrabold text-amber-300 tracking-wider">TEMPESKROCOUAS</span>
+                                    <button onclick="copyPromoCode()" class="bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold px-3 py-1 rounded text-[10px] flex items-center gap-1 transition-all">
+                                        <i data-lucide="copy" class="w-3 h-3"></i> Salin
+                                    </button>
+                                </div>
+                                <p class="text-[9px] text-amber-200/70 italic">Screenshot kode berikut lalu pergi ke Toko Tempes resmi untuk menukarkan kode</p>
+                                
+                                <div class="flex gap-2 pt-2 justify-center">
+                                    <button onclick="closeVoucher()" class="bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-full text-xs font-semibold">Tutup</button>
+                                    <a href="#lokasi-section" class="bg-green-500 hover:bg-green-600 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"></i> Cek Lokasi Toko</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reset & Next Fruit -->
+                    <div class="p-3 bg-amber-100/50 border-t border-amber-200 flex justify-between items-center text-xs text-amber-900 font-semibold px-4">
+                        <div class="flex items-center gap-2">
+                          <span class="text-[10px] text-amber-700 uppercase">Berikutnya:</span>
+                                <img
+        id="game-next-image"
+        src="assets/Objek1.png"
+        alt="Next Object"
+        class="w-8 h-8 object-contain animate-pulse">
+                        </div>
+                        <button id="btn-game-reset" class="bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-colors text-[11px]">
+                            <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Ulangi
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <div class="bg-amber-100 p-3 border-t border-b border-amber-200">
+        <div class="text-[10px] text-amber-800 font-bold uppercase text-center mb-1.5">Alur Evolusi Tempes</div>
+        <div class="flex items-center justify-around bg-white/60 p-2 rounded-xl border border-amber-200/50 max-w-xl mx-auto">
+            <div class="flex flex-col items-center"><span class="text-lg"></span><span class="text-[9px] text-red-700 font-medium">Si Kroco</span></div>
+            <span class="text-xs text-amber-500">➜</span>
+            <div class="flex flex-col items-center"><span class="text-lg"></span><span class="text-[9px] text-orange-700 font-medium">Si Boss</span></div>
+            <span class="text-xs text-amber-500">➜</span>
+            <div class="flex flex-col items-center"><span class="text-lg"></span><span class="text-[9px] text-yellow-700 font-medium">Healer</span></div>
+            <span class="text-xs text-amber-500">➜</span>
+            <div class="flex flex-col items-center"><span class="text-lg"></span><span class="text-[9px] text-green-700 font-medium">Tempes Anime</span></div>
+            <span class="text-xs text-amber-500">➜</span>
+            <div class="flex flex-col items-center"><span class="text-lg"></span><span class="text-[9px] text-blue-700 font-medium">TempeS Kenn</span></div>
+            <span class="text-xs text-amber-500">➜</span>
+            <div class="flex flex-col items-center"><span class="text-lg"></span><span class="text-[9px] text-purple-900 font-bold">GOD Tempes</span></div>
+            <span class="text-xs text-amber-500">➜</span>
+            <div class="flex flex-col items-center"><span class="text-lg"></span><span class="text-[9px] text-violet-400 font-bold">Super Ho</span></div>
+        </div>
+    </div>
+
+    <section id="lokasi-section" class="lokasi-container">
+    <div class="lokasi-header">
+        <h2>📍 Kunjungi Toko Resmi Tempes</h2>
+        <p>Mainkan gamenya, dapatkan vouchernya, dan tukarkan langsung di toko utama kami!</p>
+    </div>
+
+    <div class="lokasi-content">
+        <div class="info-toko-card">
+            <h3><strong>Tempes Store</strong></h3>
+            
+            <div class="info-item">
+                <span class="icon">🏢</span>
+                <p><strong>Alamat:</strong> Jl. Jendral Sudirman No.Kel, Selindung Baru, Kota Pangkal Pinang, Kepulauan Bangka Belitung 33172</p>
+            </div>
+
+            <div class="info-item">
+                <span class="icon">🕒</span>
+                <p><strong>Jam Operasional:</strong><br>
+                   Senin - Jumat: 09.00 - 20.00 WIB<br>
+                   Sabtu - Minggu: 10.00 - 17.00 WIB
+                </p>
+            </div>
+
+            <div class="info-item">
+                <span class="icon">📞</span>
+                <p><strong>Kontak Kemitraan (B2B):</strong> (021) 555-TEMPES / cs@tempesofisial.com</p>
+            </div>
+
+            <div class="info-badges">
+                <span class="badge">Bisa Tukar Voucher Game</span>
+                <span class="badge">Stok Selalu Fresh</span>
+            </div>
+
+            <button class="btn-rute" onclick="alert('Simulasi: Membuka Google Maps menuju Toko Utama Tempes!')">
+                🚀 Dapatkan Rute Perjalanan
+            </button>
+        </div>
+
+        <div class="map-placeholder">
+            <div class="map-graphic">
+                <div class="pin-toko">📍</div>
+                <div class="label-peta">Toko Resmi Tempes (Simulasi Alamat)</div>
+            </div>
+            <div class="map-overlay-text">
+                🌐 Peta Interaktif Terintegrasi
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Marketing Social Media / Order Section -->
+    <section class="py-16 px-4 bg-white text-center">
+        <div class="max-w-2xl mx-auto space-y-6">
+            
+            <h2 class="text-3xl font-extrabold brand-font">Hubungi Kami via Instagram atau WhatsApp</h2>
+            <p class="text-amber-900/80 text-sm max-w-lg mx-auto">
+                Beli sekarang sebelum kehabisan! Untuk informasi lebih lanjut dapat menghubungi kami via Instagram atau WhatsApp.
+            </p>
+            
+            <!-- Mock Instagram Feed Link -->
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
+                <a href="https://www.instagram.com/tempes.company/" target="_blank" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600 text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:opacity-90 transition-all text-sm">
+                    <i data-lucide="instagram" class="w-5 h-5"></i> @tempes.company
+                </a>
+                <a href="https://wa.me/6282281975767?text=Halo%20TEMPES%2C%20aku%20mau%20pesan%20keripik%20tempenya%20dong!" target="_blank" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-500 text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:bg-green-600 transition-all text-sm">
+                    <i class="w-5 h-5"></i> WhatsApp kami
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-amber-950 text-amber-200/80 py-12 px-4 border-t border-amber-900 text-xs">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-center md:text-left space-y-2">
+                <h4 class="text-base brand-font font-bold text-amber-400 tracking-wider">TEMPES</h4>
+                <p>Snack Tempe Premium Kebanggaan Lokal Indonesia.</p>
+                <p class="text-[10px] text-amber-200/50">Proyek Fiktif untuk Tugas Akhir Mata Kuliah Sosial Media Marketing (UAS) © 2026</p>
+            </div>
+            <div class="flex gap-6 font-semibold">
+                <a href="#beranda" class="hover:text-amber-400 transition-colors">Beranda</a>
+                <a href="#produk" class="hover:text-amber-400 transition-colors">Produk</a>
+                <a href="#game" class="hover:text-amber-400 transition-colors">Bermain Game</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal Panduan / Bantuan UAS -->
+    <div id="modal-info" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-6 border-4 border-amber-400 shadow-2xl relative">
+            <button id="btn-close-info" class="absolute right-4 top-4 text-gray-400 hover:text-amber-600 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-xl game-title text-amber-950 mb-4 text-center">INFORMASI PROYEK</h3>
+            
+            <div class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                <div class="p-2 bg-amber-50 rounded-xl text-xs text-amber-900">
+                    <p class="font-bold mb-1">💡 Catatan Pengembangan UAS:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li>Fisika 2D disimulasikan menggunakan pustaka <strong>Matter.js</strong>.</li>
+                        <li>Aset game terintegrasi penuh dengan 6 objek custom buatan sendiri.</li>
+                        <li>Sistem efek suara dibuat menggunakan <strong>Web Audio API</strong> (tanpa aset eksternal).</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between bg-amber-50/50 p-1.5 rounded-lg text-xs">
+                        <span class="font-bold text-red-500">1. Si Kroco</span>
+                        <span class="text-gray-500">Radius: 15 (Skor: +1)</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-amber-50/50 p-1.5 rounded-lg text-xs">
+                        <span class="font-bold text-orange-500">2. Si Boss</span>
+                        <span class="text-gray-500">Radius: 23 (Skor: +2)</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-amber-50/50 p-1.5 rounded-lg text-xs">
+                        <span class="font-bold text-yellow-500">3. Tempes Healer</span>
+                        <span class="text-gray-500">Radius: 32 (Skor: +4)</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-amber-50/50 p-1.5 rounded-lg text-xs">
+                        <span class="font-bold text-green-500">4. Tempes Anime</span>
+                        <span class="text-gray-500">Radius: 42 (Skor: +8)</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-amber-50/50 p-1.5 rounded-lg text-xs">
+                        <span class="font-bold text-blue-700">5. Tempe S Kenn</span>
+                        <span class="text-gray-500">Radius: 54 (Skor: +16)</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-amber-50/50 p-1.5 rounded-lg text-xs border border-purple-400">
+                        <span class="font-bold text-purple-700">6. Hyper S Kenn</span>
+                        <span class="text-gray-500">Radius: 68 (Skor: +32)</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-center text-red-500 font-semibold mt-4">Jangan biarkan tumpukan objek melewati garis batas merah selama 3 detik!</p>
+        </div>
+    </div>
+
+    <script>
+        // --- SISTEM GAME FISIKA "TEMPES MERGE" ---
+        const canvas = document.getElementById('game-canvas');
+        const scoreElement = document.getElementById('game-score');
+        const nextImageElement = document.getElementById('game-next-image');
+        const gameOverlay = document.getElementById('game-overlay');
+        const gameOverlayTitle = document.getElementById('game-overlay-title');
+        const gameOverlayDesc = document.getElementById('game-overlay-desc');
+        const btnStart = document.getElementById('btn-game-start');
+        const btnReset = document.getElementById('btn-game-reset');
+        const dropGuide = document.getElementById('game-drop-guide');
+        const voucherPopup = document.getElementById('voucher-popup');
+
+        // Mengatur resolusi internal canvas agar pas dengan kontainer
+        const WIDTH = 380;
+        const HEIGHT = 400;
+        const DANGER_Y = 70;
+
+        // HIGH-DPI / RETINA DISPLAY CANVAS RESOLUTION SCALING (MEMPERBAIKI GAMBAR BURAM)
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = WIDTH * dpr;
+        canvas.height = HEIGHT * dpr;
+        canvas.style.width = `${WIDTH}px`;
+        canvas.style.height = `${HEIGHT}px`;
+
+        const ctx = canvas.getContext('2d');
+        // Skala semua operasi penggambaran berdasarkan rasio piksel perangkat agar gambar tetap tajam!
+        ctx.scale(dpr, dpr);
+
+        // Sound Engine Sintetis (Web Audio API)
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'drop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+            } else if (type === 'merge') {
+                // Suara renyah kriuk keripik tempe
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime + 0.05);
+                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'gameover') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.6);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.6);
+            }
+        }
+
+        const FRUIT_TYPES = [
+            { level: 0, name: 'Si Kroco', emoji: '🫘', radius: 25, color: '#fef08a', score: 1, imageSrc: 'assets/Objek1.png' },
+            { level: 1, name: 'Si Boss', emoji: '🔬', radius: 40, color: '#fcd34d', score: 2, imageSrc: 'assets/Objek2.png' },
+            { level: 2, name: 'Tempes Healer', emoji: '🧱', radius: 55, color: '#dfc093', score: 4, imageSrc: 'assets/Objek3.png' },
+            { level: 3, name: 'Tempes Anime', emoji: '🧆', radius: 70, color: '#b45309', score: 8, imageSrc: 'assets/Objek4.png' },
+            { level: 4, name: 'Tempe S Kenn', emoji: '🟡', radius: 85, color: '#fbbf24', score: 16, imageSrc: 'assets/Objek5.png' },
+            { level: 5, name: 'Hyper S Kenn', emoji: '👾', radius: 100, color: '#a855f7', score: 32, imageSrc: 'assets/Objek6.png' },
+            { level: 6, name: 'Super Ho', emoji: '👽', radius: 115, color: '#deb8d5', score: 64, imageSrc: 'assets/Objek7.png' }
+        ];
+
+        // Memuat objek gambar (Image Loader)
+        FRUIT_TYPES.forEach(fruit => {
+            if (fruit.imageSrc) {
+                const img = new Image();
+                img.src = fruit.imageSrc;
+                img.onload = () => { fruit.imageObj = img; };
+                // Dukungan dinamis jika format ekspor Anda adalah JPG
+                img.onerror = () => {
+                    const fallbackImg = new Image();
+                    fallbackImg.src = fruit.imageSrc.replace('.png', '.jpg');
+                    fallbackImg.onload = () => { fruit.imageObj = fallbackImg; };
+                    fallbackImg.onerror = () => { fruit.imageObj = null; };
+                };
+            } else {
+                fruit.imageObj = null;
+            }
+        });
+
+        let score = 0;
+        let gameActive = false;
+        let currentFruitIndex = 0;
+        let nextFruitIndex = 0;
+        let readyToDrop = true;
+        let previewFruit = null;
+        let lastDropTime = 0;
+        let particles = [];
+        let voucherClaimed = false; // Memastikan voucher diskon hanya muncul sekali per sesi
+
+        const { Engine, World, Bodies, Body, Events, Composite } = Matter;
+        let engine, world;
+
+        function initPhysics() {
+            engine = Engine.create({ gravity: { y: 1.3 } });
+            world = engine.world;
+
+            const wallThickness = 60;
+            const walls = [
+                // Lantai bawah
+                Bodies.rectangle(WIDTH / 2, HEIGHT + wallThickness / 2, WIDTH, wallThickness, { isStatic: true, friction: 0.15 }),
+                // Dinding kiri
+                Bodies.rectangle(-wallThickness / 2, HEIGHT / 2, wallThickness, HEIGHT, { isStatic: true, friction: 0.1 }),
+                // Dinding kanan
+                Bodies.rectangle(WIDTH + wallThickness / 2, HEIGHT / 2, wallThickness, HEIGHT, { isStatic: true, friction: 0.1 })
+            ];
+
+            World.add(world, walls);
+            Events.on(engine, 'collisionStart', handleCollision);
+        }
+
+        function startGame() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            if (world) {
+                World.clear(world);
+                Engine.clear(engine);
+            }
+            initPhysics();
+
+            score = 0;
+            scoreElement.textContent = score;
+            particles = [];
+            gameActive = true;
+            readyToDrop = true;
+
+            currentFruitIndex = Math.floor(Math.random() * 3);
+            rollNextFruit();
+            updateNextFruitUI();
+
+            gameOverlay.classList.add('scale-0', 'opacity-0');
+            setTimeout(() => gameOverlay.classList.add('hidden'), 300);
+
+            spawnPreviewFruit();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function rollNextFruit() {
+            nextFruitIndex = Math.floor(Math.random() * 3);
+        }
+
+function updateNextFruitUI() {
+    const nextFruit = FRUIT_TYPES[nextFruitIndex];
+    nextImageElement.src = nextFruit.imageSrc;
+    nextImageElement.alt = nextFruit.name;
+}
+
+        function spawnPreviewFruit() {
+            const fruitData = FRUIT_TYPES[currentFruitIndex];
+            previewFruit = {
+                x: WIDTH / 2,
+                y: 35,
+                radius: fruitData.radius,
+                emoji: fruitData.emoji,
+                color: fruitData.color,
+                level: fruitData.level,
+                imageObj: fruitData.imageObj
+            };
+        }
+
+        function movePreviewFruit(clientX) {
+            if (!gameActive || !readyToDrop || !previewFruit) return;
+
+            const rect = canvas.getBoundingClientRect();
+            let targetX = clientX - rect.left;
+
+            const minX = previewFruit.radius + 10;
+            const maxX = WIDTH - previewFruit.radius - 10;
+            previewFruit.x = Math.max(minX, Math.min(maxX, targetX));
+
+            dropGuide.style.left = `${previewFruit.x}px`;
+            dropGuide.style.display = 'block';
+        }
+
+        function dropFruit() {
+            if (!gameActive || !readyToDrop || !previewFruit) return;
+
+            const now = Date.now();
+            if (now - lastDropTime < 500) return;
+
+            lastDropTime = now;
+            readyToDrop = false;
+            dropGuide.style.display = 'none';
+
+            playSound('drop');
+
+            const fruitData = FRUIT_TYPES[currentFruitIndex];
+            const fruitBody = Bodies.circle(previewFruit.x, previewFruit.y, fruitData.radius, {
+                restitution: 0.15,
+                friction: 0.1,
+                density: 0.001,
+                label: 'fruit',
+                plugin: { level: fruitData.level, isFruit: true }
+            });
+
+            World.add(world, fruitBody);
+            previewFruit = null;
+
+            setTimeout(() => {
+                if (!gameActive) return;
+                currentFruitIndex = nextFruitIndex;
+                rollNextFruit();
+                updateNextFruitUI();
+                spawnPreviewFruit();
+                readyToDrop = true;
+            }, 500);
+        }
+
+        function handleCollision(event) {
+            if (!gameActive) return;
+
+            const pairs = event.pairs;
+            for (let i = 0; i < pairs.length; i++) {
+                const pair = pairs[i];
+                const bodyA = pair.bodyA;
+                const bodyB = pair.bodyB;
+
+                if (bodyA.plugin && bodyA.plugin.isFruit && bodyB.plugin && bodyB.plugin.isFruit) {
+                    const levelA = bodyA.plugin.level;
+                    const levelB = bodyB.plugin.level;
+
+                    if (levelA === levelB && !bodyA.isDead && !bodyB.isDead) {
+                        const currentLevel = levelA;
+                        bodyA.isDead = true;
+                        bodyB.isDead = true;
+
+                        const posX = (bodyA.position.x + bodyB.position.x) / 2;
+                        const posY = (bodyA.position.y + bodyB.position.y) / 2;
+
+                        setTimeout(() => {
+                            Composite.remove(world, bodyA);
+                            Composite.remove(world, bodyB);
+
+                            playSound('merge');
+
+                            if (currentLevel < FRUIT_TYPES.length - 1) {
+                                const nextLevel = currentLevel + 1;
+                                createMergedFruit(posX, posY, nextLevel);
+                                spawnParticles(posX, posY, FRUIT_TYPES[nextLevel].color);
+                                updateScore(FRUIT_TYPES[nextLevel].score);
+                            } else {
+                                spawnParticles(posX, posY, '#a855f7', 35);
+                                updateScore(50); // Maksimal bonus
+                            }
+                        }, 0);
+                    }
+                }
+            }
+        }
+
+        function createMergedFruit(x, y, level) {
+            const fruitData = FRUIT_TYPES[level];
+            const mergedBody = Bodies.circle(x, y, fruitData.radius, {
+                restitution: 0.18,
+                friction: 0.1,
+                label: 'fruit',
+                plugin: { level: level, isFruit: true }
+            });
+
+            Body.setVelocity(mergedBody, { x: (Math.random() - 0.5) * 1.5, y: -1.5 });
+            World.add(world, mergedBody);
+        }
+
+        function spawnParticles(x, y, color, count = 12) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 4;
+                particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    radius: 2 + Math.random() * 3,
+                    color: color,
+                    alpha: 1,
+                    decay: 0.03 + Math.random() * 0.02
+                });
+            }
+        }
+
+        // Update Score
+        function updateScore(points) {
+            score += points;
+            scoreElement.textContent = score;
+
+            // Trigger SMM Voucher jika mencapai skor 100 dan belum diklaim
+            if (score >= 100 && !voucherClaimed) {
+                voucherClaimed = true;
+                showVoucher();
+            }
+        }
+
+        function showVoucher() {
+            voucherPopup.classList.remove('hidden');
+            playSound('merge');
+        }
+
+        function closeVoucher() {
+            voucherPopup.classList.add('hidden');
+        }
+
+        function copyPromoCode() {
+            const codeText = document.getElementById('promo-code').textContent;
+            
+            // Salin menggunakan execCommand fallback aman untuk iFrame
+            const el = document.createElement('textarea');
+            el.value = codeText;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            alert('Kode promo "TEMPESKROCOUAS" berhasil disalin ke clipboard! Pakai kode berikut dengan mengunjungi gerai Tempes terdekat!');
+        }
+
+        let dangerTimer = 0;
+        function checkGameOver(deltaTime) {
+            const bodies = Composite.allBodies(world);
+            let inDanger = false;
+
+            for (let i = 0; i < bodies.length; i++) {
+                const body = bodies[i];
+                if (body.plugin && body.plugin.isFruit) {
+                    const topPos = body.position.y - body.circleRadius;
+                    if (topPos < DANGER_Y && body.velocity.y < 0.2 && body.position.y > DANGER_Y + 10) {
+                        inDanger = true;
+                        break;
+                    }
+                }
+            }
+
+            if (inDanger) {
+                dangerTimer += deltaTime;
+                document.getElementById('game-danger-line').classList.add('animate-pulse', 'opacity-100');
+                if (dangerTimer >= 3000) endGame();
+            } else {
+                dangerTimer = 0;
+                document.getElementById('game-danger-line').classList.remove('animate-pulse', 'opacity-100');
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            playSound('gameover');
+
+            gameOverlayTitle.textContent = "GAME OVER";
+            gameOverlayDesc.innerHTML = `Para Pasukan Tempes tumpah keluar wadah!<br><span class="font-extrabold text-amber-400">Skor Akhir: ${score}</span>`;
+            btnStart.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Main Lagi`;
+            lucide.createIcons();
+
+            gameOverlay.classList.remove('hidden');
+            setTimeout(() => gameOverlay.classList.remove('scale-0', 'opacity-0'), 50);
+        }
+
+        // Render loop
+        function gameLoop(time) {
+            if (!gameActive && particles.length === 0) return;
+
+            const deltaTime = time - (lastTime || time);
+            lastTime = time;
+
+            Engine.update(engine, Math.min(deltaTime, 30));
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+            // Pengaturan Image Smoothing bermutu tinggi agar aset Anda terlihat sangat jernih!
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // Grid Pembantu Estetik
+            ctx.strokeStyle = '#fef3c7';
+            ctx.lineWidth = 1;
+            for (let i = 25; i < WIDTH; i += 25) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, HEIGHT); ctx.stroke();
+            }
+
+            // Draw game objects
+            if (world) {
+                const bodies = Composite.allBodies(world);
+                bodies.forEach(body => {
+                    if (body.plugin && body.plugin.isFruit) {
+                        drawFruit(ctx, body);
+                    }
+                });
+            }
+
+            // Draw preview fruit
+            if (previewFruit && readyToDrop) {
+                ctx.save();
+                ctx.translate(previewFruit.x, previewFruit.y);
+
+                // Menggunakan rendering gambar jernih jika tersedia, jika tidak kembali ke Emoji
+                if (previewFruit.imageObj && previewFruit.imageObj.complete) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, previewFruit.radius, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(previewFruit.imageObj, -previewFruit.radius, -previewFruit.radius, previewFruit.radius * 2, previewFruit.radius * 2);
+                } else {
+                    ctx.font = `${previewFruit.radius * 1.3}px Arial`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(previewFruit.emoji, 0, 0);
+                }
+                ctx.restore();
+            }
+
+            // Draw particles
+            drawParticles(ctx);
+
+            if (gameActive) checkGameOver(deltaTime);
+            requestAnimationFrame(gameLoop);
+        }
+
+        let lastTime = 0;
+
+        function drawFruit(context, body) {
+            const level = body.plugin.level;
+            const fruitData = FRUIT_TYPES[level];
+            const { x, y } = body.position;
+            const radius = body.circleRadius;
+
+            context.save();
+            context.translate(x, y);
+            context.rotate(body.angle);
+
+            // Pengaturan penajaman gambar di dalam fungsi draw
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
+
+            // Jika ada gambar khusus di folder assets/ & sukses ter-load, gambar kemasannya!
+            if (fruitData.imageObj && fruitData.imageObj.complete) {
+                context.beginPath();
+                context.arc(0, 0, radius, 0, Math.PI * 2);
+                context.clip();
+                context.drawImage(fruitData.imageObj, -radius, -radius, radius * 2, radius * 2);
+            } else {
+                // FALLBACK: Circle Background dengan gradasi renyah keripik tempe
+                const grad = context.createRadialGradient(-radius * 0.15, -radius * 0.15, radius * 0.1, 0, 0, radius);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.3, fruitData.color);
+                grad.addColorStop(1, adjustColorBrightness(fruitData.color, -20));
+
+                context.fillStyle = grad;
+                context.beginPath(); context.arc(0, 0, radius, 0, Math.PI * 2); context.fill();
+                context.strokeStyle = adjustColorBrightness(fruitData.color, -30);
+                context.lineWidth = 2; context.stroke();
+
+                // Semburan ornamen detail kedelai khusus di dalam bola tempe / ragi
+                if (level === 2) {
+                    context.strokeStyle = 'rgba(255,255,255,0.4)';
+                    context.lineWidth = 3;
+                    context.beginPath(); context.arc(-radius*0.2, radius*0.3, radius*0.15, 0, Math.PI); context.stroke();
+                }
+
+                context.restore();
+                context.save();
+                context.translate(x, y);
+                context.rotate(body.angle * 0.5);
+
+                // Teks emoji
+                context.font = `${radius * 1.2}px Arial`;
+                context.textAlign = 'center'; context.textBaseline = 'middle';
+                context.fillText(fruitData.emoji, 0, radius * 0.05);
+            }
+
+            context.restore();
+        }
+
+        function drawParticles(context) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx; p.y += p.vy;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+
+                context.save();
+                context.globalAlpha = p.alpha;
+                context.fillStyle = p.color;
+                context.beginPath(); context.arc(p.x, p.y, p.radius, 0, Math.PI * 2); context.fill();
+                context.restore();
+            }
+        }
+
+        function adjustColorBrightness(hex, percent) {
+            let num = parseInt(hex.replace("#",""), 16),
+                amt = Math.round(2.55 * percent),
+                R = (num >> 16) + amt,
+                G = (num >> 8 & 0x00FF) + amt,
+                B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R<255?R<0?0:R:255)*0x10000 + (G<255?G<0?0:G:255)*0x100 + (B<255?B<0?0:B:255)).toString(16).slice(1);
+        }
+
+        // Event listener kontrol area game
+        canvas.addEventListener('mousemove', (e) => movePreviewFruit(e.clientX));
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) movePreviewFruit(e.touches[0].clientX);
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('mouseup', dropFruit);
+        canvas.addEventListener('touchend', (e) => {
+            dropFruit(); e.preventDefault();
+        }, { passive: false });
+
+        btnStart.addEventListener('click', startGame);
+        btnReset.addEventListener('click', () => {
+            if (confirm('Ulangi game?')) startGame();
+        });
+
+        // Hentikan scroll window bawaan ponsel saat jari sedang menggeser canvas game
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.target.closest('#game-container')) e.preventDefault();
+        }, { passive: false });
+
+        // Event Listeners untuk Modal Info Proyek
+        const btnInfo = document.getElementById('btn-info');
+        const btnCloseInfo = document.getElementById('btn-close-info');
+        const modalInfo = document.getElementById('modal-info');
+
+        btnInfo.addEventListener('click', () => {
+            modalInfo.classList.remove('hidden');
+        });
+
+        btnCloseInfo.addEventListener('click', () => {
+            modalInfo.classList.add('hidden');
+        });
+
+        modalInfo.addEventListener('click', (e) => {
+            if (e.target === modalInfo) {
+                modalInfo.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
